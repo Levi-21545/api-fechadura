@@ -10,6 +10,6 @@ Route::get('/user', function (Request $request) {
 
 Route::group(['prefix'=> 'tokens', 'namespace'=>"App\Http\Controllers\Api"], function () {
     Route::post("create", [TokenController::class, "store"]);
-    Route::get("validate", [TokenController::class, "validate"]);
+    Route::post("validate", [TokenController::class, "validate"]);
     Route::delete("delete", [TokenController::class, "destroy"]);
 });

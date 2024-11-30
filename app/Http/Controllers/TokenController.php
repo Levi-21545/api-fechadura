@@ -9,7 +9,8 @@ use Illuminate\Http\Request;
 class TokenController extends Controller
 {
     public function store(Request $request) {
-        return new TokenResource(Token::create($request->all()));
+        $t = new TokenResource(Token::create($request->all()));
+        return "true";
     }
 
     public function validate(Request $request) {
@@ -22,6 +23,6 @@ class TokenController extends Controller
 
     public function destroy(Request $request) {
         Token::where("token", "=", $request->token)->delete();
-        return response(status:204);
+        return "true";
     }
 }
