@@ -2,27 +2,67 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\TokenResource;
 use App\Models\Token;
+use App\Models\LogAcesso;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class TokenController extends Controller
 {
-    public function store(Request $request) {
-        $t = new TokenResource(Token::create($request->all()));
-        return "true";
+    // Cadastrar
+    public function store(Request $request): JsonResponse
+    {
+        $token = Token::create($request->all());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Token cadastrado com sucesso.',
+            'data' => $token
+        ], 201);
     }
 
-    public function validate(Request $request) {
-        $t = Token::where("token", "=", $request->token)->first();
-        if(isset($t) && !empty($t)) {
-            return "true";
+    // Validar
+    public function validate(Request $request): JsonResponse
+    {
+        $token = Token::where('token', $request->token)->first();
+
+        $status = ($token) ? 'autorizado' : 'negado';
+
+        //Cria um Log
+        LogAcesso::create([
+            'token' => $request->token,
+            'status' => $status,
+            'ip_address' => $request->ip(),
+        ]);
+
+        if ($token) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Token validado com sucesso.'
+            ], 200);
         }
-        return "false";
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Token nao encontrado.'
+        ], 404);
     }
 
-    public function destroy(Request $request) {
-        Token::where("token", "=", $request->token)->delete();
-        return "true";
+    // Deletar
+    public function destroy(Request $request): JsonResponse
+    {
+        $deleted = Token::where('token', $request->token)->delete();
+
+        if ($deleted) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Token deletado com sucesso.'
+            ], 200);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Token nao encontrado ou ja deletado.'
+        ], 404);
     }
 }
